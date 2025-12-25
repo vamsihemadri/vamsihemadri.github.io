@@ -1,0 +1,9 @@
+Month Day, Year
+Entry Title
+
+Write your thoughts here. This is the first paragraph.
+
+Use blank lines to separate paragraphs. This is the second paragraph.
+
+You can write as much as you want. The script will automatically format everything into nice HTML.
+

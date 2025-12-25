@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Bounded Blocking Queue - Vamsi Hemadri</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../../assets/css/noscript.css" /></noscript>
+		<style>
+			/* Page background */
+			body {
+				background-color: #e8f4f8;
+			}
+			
+			/* Keep content areas white for readability */
+			#main .inner {
+				background: #ffffff;
+				padding: 2em;
+				border-radius: 4px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+			
+			/* Ensure all text is black for visibility */
+			#main .inner p,
+			#main .inner h1,
+			#main .inner h2,
+			#main .inner h3,
+			#main .inner h4,
+			#main .inner li,
+			#main .inner ol,
+			#main .inner strong,
+			#main .inner ul {
+				color: #000000 !important;
+			}
+			
+			/* Code block styling for full code examples */
+			pre {
+				background: #0d1f3c;
+				border: 1px solid #1e3a5f;
+				border-left: 4px solid #f36d33;
+				color: #ffffff;
+				page-break-inside: avoid;
+				font-family: 'Courier New', Consolas, Monaco, monospace;
+				font-size: 15px;
+				line-height: 1.7;
+				margin-bottom: 1.6em;
+				max-width: 100%;
+				overflow: auto;
+				padding: 1.2em 1.5em;
+				display: block;
+				word-wrap: break-word;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+			}
+			
+			/* Inline code styling */
+			code {
+				font-family: 'Courier New', Consolas, Monaco, monospace;
+				background: #e8f4f8;
+				color: #c7254e;
+				padding: 3px 8px;
+				border-radius: 4px;
+				border: 1px solid #d0e8f0;
+				font-size: 0.9em;
+				font-weight: 500;
+			}
+			
+			/* Code inside pre blocks should inherit pre styling */
+			pre code {
+				background: transparent;
+				color: inherit;
+				padding: 0;
+				border: none;
+				border-radius: 0;
+				font-size: inherit;
+				font-weight: normal;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="../../index.html" class="logo"><strong>Vamsi Hemadri</strong></a>
+						<nav>
+							<a href="#menu">Menu</a>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<ul class="links">
+							<li><a href="../../index.html">Home</a></li>
+							<li><a href="../learningsLanding.html">Learnings</a></li>
+							<li><a href="concurrency-landing.html">Concurrency</a></li>
+							<li><a href="../../diary/diaryLanding.html">Thoughts</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main" class="alt">
+
+						<!-- One -->
+							<section id="one">
+								<div class="inner">
+									<header class="major">
+										<h1>Bounded Blocking Queue</h1>
+									</header>
+									
+									<h2>Overview</h2>
+									<p>A Bounded Blocking Queue is a thread-safe data structure that implements the producer-consumer pattern. It has a fixed capacity, and operations block when the queue is full (on insertion) or empty (on removal). This implementation demonstrates the use of 
+                                        Java's synchronization mechanisms including <code>synchronized</code>, <code>wait()</code>, and <code>notifyAll()</code>.</p>
+
+									<h2>Key Concepts</h2>
+									<ul>
+										<li><strong>Thread Safety:</strong> This queue object can be shared between multiple producer threads. </li>
+										<li><strong>Blocking Behavior:</strong> Producers wait when the queue is full; consumers wait when it's empty</li>
+										<li><strong>Producer-Consumer Pattern:</strong> Separates the production and consumption of data</li>
+									</ul>
+
+									<h2>Implementation Details</h2>
+									<p>The implementation uses an <code>ArrayDeque</code> as the underlying data structure and synchronizes access using the monitor pattern.
+                                         When the queue reaches its maximum size, producers are blocked until consumers remove elements. Similarly, when the queue is empty, consumers are blocked until producers add elements.</p>
+
+									<h3>Key Methods:</h3>
+									<ul>
+										<li><code>push()</code> - Adds an element to the queue, blocks if full</li>
+										<li><code>poll()</code> - Removes and returns an element, blocks if empty</li>
+										<li><code>wait()</code> - Releases the lock and waits to be notified</li>
+										<li><code>notifyAll()</code> - Wakes up all waiting threads</li>
+									</ul>
+
+									<h2>Complete Code</h2>
+									<pre><code>package lld.selfPractice.concurrencyUtils.boundedBlockingQueue;
+
+import java.util.ArrayDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class BoundedBlockingQueueDriver {
+
+    public static void main(){
+
+        Runnable first = ()->System.out.println("HELLO FIRST");
+        Runnable second = ()->System.out.println("HELLO SECOND");
+        Runnable third = ()->System.out.println("HELLO Third");
+        Runnable fourth = ()->System.out.println("HELLO fourth");
+
+        CustomBoundedBlockingQueue customBoundedBlockingQueue = new CustomBoundedBlockingQueue(3);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        executorService.submit(new Pusher(customBoundedBlockingQueue,first));
+        executorService.submit(new Pusher(customBoundedBlockingQueue,second));
+        executorService.submit(new Pusher(customBoundedBlockingQueue,third));
+        executorService.submit(new Pusher(customBoundedBlockingQueue,fourth));
+
+        executorService.submit(new Poller(customBoundedBlockingQueue));
+        executorService.submit(new Poller(customBoundedBlockingQueue));
+    }
+}
+
+class Pusher implements Runnable{
+    CustomBoundedBlockingQueue customBoundedBlockingQueue;
+    Runnable runnable;
+
+    public Pusher(CustomBoundedBlockingQueue customBoundedBlockingQueue,Runnable runnable){
+        this.customBoundedBlockingQueue = customBoundedBlockingQueue;
+        this.runnable = runnable;
+    }
+
+    public void run(){
+        customBoundedBlockingQueue.push(this.runnable);
+    }
+
+}
+class Poller implements Runnable{
+    CustomBoundedBlockingQueue customBoundedBlockingQueue;
+    public Poller(CustomBoundedBlockingQueue customBoundedBlockingQueue){
+        this.customBoundedBlockingQueue = customBoundedBlockingQueue;
+    }
+
+    public void run(){
+        while(true){
+            Runnable top  = customBoundedBlockingQueue.poll();
+            top.run();
+        }
+    }
+}
+
+
+ abstract class GenericElement implements Runnable{
+    public abstract void run();
+}
+
+interface CustomQueue&lt;T&gt;{
+    void push(T obj);
+    T poll();
+}
+
+class CustomBoundedBlockingQueue implements CustomQueue&lt;Runnable&gt;{
+    ArrayDeque&lt;Runnable&gt; deq;
+    int maxSize;
+
+    public CustomBoundedBlockingQueue(int size){
+        this.maxSize = size;
+        this.deq= new ArrayDeque&lt;&gt;();
+    }
+
+
+    @Override
+    public void push(Runnable obj) {
+        synchronized (this){
+            while(deq.size()>=maxSize){
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            deq.offerLast(obj);
+            notifyAll();
+        }
+    }
+
+    @Override
+    public Runnable poll() {
+        synchronized (this){
+            while(deq.size()==0){
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            Runnable toReturn = deq.pollFirst();
+            notifyAll();
+            return toReturn;
+        }
+    }
+}</code></pre>
+
+									<h2>How It Works</h2>
+									<ol>
+										<li><strong>Initialization:</strong> The queue is created with a maximum capacity of 3 elements</li>
+										<li><strong>Producers (Pushers):</strong> Four pusher threads try to add Runnable tasks to the queue</li>
+										<li><strong>Consumers (Pollers):</strong> Two poller threads continuously remove and execute tasks from the queue</li>
+										<li><strong>Synchronization:</strong> When the queue is full, pushers wait. When empty, pollers wait. <code>notifyAll()</code> wakes up waiting threads when state changes</li>
+									</ol>
+
+									<h2>Learning Takeaways</h2>
+									<ul>
+										<li>Understanding the importance of <code>while</code> loops instead of <code>if</code> statements when checking conditions after <code>wait()</code> (to handle spurious wakeups)</li>
+									</ul>
+
+									<p><a href="concurrency-landing.html" class="button">Back to Concurrency</a></p>
+								</div>
+							</section>
+
+					</div>
+
+				<!-- Contact -->
+					<section id="contact">
+						<div class="inner">
+							<section>
+								<form method="post" action="#">
+									<div class="fields">
+										<div class="field half">
+											<label for="name">Name</label>
+											<input type="text" name="name" id="name" />
+										</div>
+										<div class="field half">
+											<label for="email">Email</label>
+											<input type="text" name="email" id="email" />
+										</div>
+										<div class="field">
+											<label for="message">Message</label>
+											<textarea name="message" id="message" rows="6"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send Message" class="primary" /></li>
+										<li><input type="reset" value="Clear" /></li>
+									</ul>
+								</form>
+							</section>
+							<section class="split">
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-envelope"></span>
+										<h3>Email</h3>
+										<a href="#">13vamsihemadri@gmail.com</a>
+									</div>
+								</section>
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-phone"></span>
+										<h3>Phone</h3>
+										<span>(+91) 789-688 0545</span>
+									</div>
+								</section>
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-home"></span>
+										<h3>Address</h3>
+										<span>Bengaluru<br />
+										Bengaluru<br />
+										India</span>
+									</div>
+								</section>
+							</section>
+						</div>
+					</section>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<ul class="icons">
+								<li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
+								<li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
+								<li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
+								<li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								<li><a href="#" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+							</ul>
+							<ul class="copyright">
+								<li>&copy; Vamsi Hemadri</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../../assets/js/jquery.min.js"></script>
+			<script src="../../assets/js/jquery.scrolly.min.js"></script>
+			<script src="../../assets/js/jquery.scrollex.min.js"></script>
+			<script src="../../assets/js/browser.min.js"></script>
+			<script src="../../assets/js/breakpoints.min.js"></script>
+			<script src="../../assets/js/util.js"></script>
+			<script src="../../assets/js/main.js"></script>
+
+	</body>
+</html>
+
