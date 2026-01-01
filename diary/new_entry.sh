@@ -43,3 +43,4 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "✅ Done! Your diary is updated."
 fi
 
+
