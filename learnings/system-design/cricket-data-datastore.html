@@ -1,0 +1,296 @@
+<!DOCTYPE HTML>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>CRICKET DATA, best datastore? - Vamsi Hemadri</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../../assets/css/noscript.css" /></noscript>
+		<style>
+			/* Page background */
+			body {
+				background-color: #e8f4f8;
+			}
+			
+			/* Keep content areas white for readability */
+			#main .inner {
+				background: #ffffff;
+				padding: 2em;
+				border-radius: 4px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+			
+			/* Ensure all text is black for visibility */
+			#main .inner p,
+			#main .inner h1,
+			#main .inner h2,
+			#main .inner h3,
+			#main .inner h4,
+			#main .inner li,
+			#main .inner ol,
+			#main .inner strong,
+			#main .inner ul {
+				color: #000000 !important;
+			}
+			
+			/* Code block styling for full code examples */
+			pre {
+				background: #0d1f3c;
+				border: 1px solid #1e3a5f;
+				border-left: 4px solid #f36d33;
+				color: #ffffff;
+				page-break-inside: avoid;
+				font-family: 'Courier New', Consolas, Monaco, monospace;
+				font-size: 15px;
+				line-height: 1.7;
+				margin-bottom: 1.6em;
+				max-width: 100%;
+				overflow: auto;
+				padding: 1.2em 1.5em;
+				display: block;
+				word-wrap: break-word;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+			}
+			
+			/* Inline code styling */
+			code {
+				font-family: 'Courier New', Consolas, Monaco, monospace;
+				background: #e8f4f8;
+				color: #c7254e;
+				padding: 3px 8px;
+				border-radius: 4px;
+				border: 1px solid #d0e8f0;
+				font-size: 0.9em;
+				font-weight: 500;
+			}
+			
+			/* Code inside pre blocks should inherit pre styling */
+			pre code {
+				background: transparent;
+				color: inherit;
+				padding: 0;
+				border: none;
+				border-radius: 0;
+				font-size: inherit;
+				font-weight: normal;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="../../index.html" class="logo"><strong>Vamsi Hemadri</strong></a>
+						<nav>
+							<a href="#menu">Menu</a>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<ul class="links">
+							<li><a href="../../index.html">Home</a></li>
+							<li><a href="../learningsLanding.html">Learnings</a></li>
+							<li><a href="system-design-landing.html">System Design</a></li>
+							<li><a href="../../diary/diaryLanding.html">Thoughts</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main" class="alt">
+
+						<!-- One -->
+							<section id="one">
+								<div class="inner">
+									<header class="major">
+										<h1>CRICKET DATA, best datastore?</h1>
+									</header>
+									
+									<h2>Overview</h2>
+									<p>LETS try to discuss various options we have for storing cricket data. Lets assumer we 
+                                        are building a system that can support queries like:
+                                        1. What is the average and strike rate of a player in a given year?
+                                        2. What is the average of a batsman against a bowler.
+                                        3. Get the top 10 batsman with highest strike rate against spin bowling by year.
+                                        4. In test matches, get the top k batsmen who have been dismissed in the last 3 overs 
+                                        before the end of the session by year.
+                                        5. Any generic query like 
+                                        Filter by team, year, format, sort by average, aggregate by a metric like runs, wickets, etc.
+                                    </p>
+
+									<h2>Problem Statement</h2>
+									<p>Lets assume we have to store the data for all the internationa and first class matches being played 
+                                        through out the world. Lets assume there are a 100 countries playing on any given day and 
+                                        and there are a 1000 teams in a country 
+                                        and is atleast one match being played everyday by each team in the country. 
+                                        Thats a peak QPS of 100*500 = 50,000 QPS.
+                                        On average , lets assume a match lasts 4 hours and there are 250 balls in a match.
+                                        Thats an average QPS of 100*500*250/(4*60*60) = 520 QPS.
+                                        This is the write load we need to support.
+                                        For the read load, lets assume we have 
+                                        a DAU of 10 million users and each user makes 10 requests per day.
+                                        Thats a QPS of 10,000,000*10/(100000) = 1000 QPS.
+                                        Assume the peak read QPS can be 10 time of this which comes to 10,000 QPS.
+                                    </p>
+
+									<h2>Data Characteristics</h2>
+									<ul>
+										<li>Lets assume we need to store ball by ball data.
+                                            We will primarily store the data in a deliveries table that will store the data 
+                                            on the granularity of a ball.
+                                            Lets assume we need to support periodic updates to the the deliveries data.
+                                        </li>
+									</ul>
+
+									<h2>Requirements</h2>
+									<ul>
+										<li></li>
+										<li>Durable: Data once stored should be persisted and should not be lost.
+                                            Consistent: We can assume we dont need to support an Isolation level upto
+                                            Serializable. We can assume we support upto Read Committed.  
+                                        </li>
+									</ul>
+
+									<h2>Database Options</h2>
+									
+									<h3>Option 1: PostgreSQL</h3>
+									<p>PROS:
+                                        1.PostgreSQL is useful in scenarios where we need OLTP support. This is useful in scenarios where 
+                                        we need to update/insert into multiple tables in a single transaction.
+                                        2. PostgreSQL supports columns of json type, this is useful 
+                                        when we need to store some complex data that is not easily representable in a single column.
+                                        CONS:
+                                        1. Write scalability is not great. THere is an upper limit on the write QPS we can support with PostgreSQL.
+                                        Given that we need to support a write 50k QPS, we will need atleast 10 nodes assuming each node can support 5k QPS.
+                                        Tihs means our system needs to support sharding in the application layer, we will need to handle addition and deleiton of shards, which is
+                                        not a trivial task.
+
+
+                                    </p>
+									
+									<h3>Option 2: Clickhouse</h3>
+									<p>Pros
+                                        1. Clickhouse is a columnar database and is designed for high throughput write operations. It is 
+                                        designed for OLAP use cases. 
+                                        2. It is a columnar database, aggregates over those columns are very efficient and very quick.
+                                        3. Storage is efficient, Clickhuse supports compression.
+                                        4. Materialized views can be created over frequently accessed query patterns, 
+
+                                        Cons:
+                                        1. Updates are not supported natively in MergeTree family of tables.
+                                        2. no transactions: we cant insert into multiple tables in a single transaction.
+
+                                    </p>
+
+                                    <h3>Option 3: Cassandra</h3>
+                                    <p>Pros:
+                                        1. Cassandra is a distributed database and is designed for high throughput write operations.
+                                        2. It is a key value store. we can model our database as key value pairs where the key is a combination of  
+                                        (batsman_id, match_id , ball_number) -> ball_data
+                                        3. Sharding is supported natively.
+
+                                        Cons:
+
+                                        1. No support for transactions.
+                                    </p>
+
+                                    <h3>Option 4: MongoDB</h3>
+
+                                    <p>Pros:
+                                        1. MongoDB is a document database and is designed for flexible schema, we can
+                                        store any extra information that we want in each document.
+                                        2. Sharding is supported natively.
+                                    </p>
+
+                                    <p>Cons:
+                                        1. Secondary indexes are not supported natively.
+									<h2>Comparison & Trade-offs</h2>
+									<p>Cliclhouse is natural fit for time series data, and given that our data is a time series data, it is a good fit.
+                                        However Cassandra also seems to be a good fit. MongoDB is not good for fast aggregates, so it is best left out in the case.
+                                      </p>
+
+									<h2>Conclusion</h2>
+									<p>ClickHouse or Cassandra</p>
+
+									<h2>Additional Considerations</h2>
+									<ul>
+										<li>There is no perfect solution, we need to choose cosidering pros and cons. Maintainability by the team is 
+                                            an important factor, so choosing the tool which everyone is comfortable with is important.
+                                        </li>
+									</ul>
+
+									<p><a href="system-design-landing.html" class="button">Back to System Design</a></p>
+								</div>
+							</section>
+
+					</div>
+
+				<!-- Contact -->
+					<section id="contact">
+						<div class="inner">
+							<section class="split">
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-envelope"></span>
+										<h3>Email</h3>
+										<a href="#">13vamsihemadri@gmail.com</a>
+									</div>
+								</section>
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-phone"></span>
+										<h3>Phone</h3>
+										<span>(+91) 789-688 0545</span>
+									</div>
+								</section>
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-home"></span>
+										<h3>Address</h3>
+										<span>Bengaluru<br />
+										Bengaluru<br />
+										India</span>
+									</div>
+								</section>
+							</section>
+						</div>
+					</section>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<ul class="icons">
+								<li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
+								<li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
+								<li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
+								<li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								<li><a href="#" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+							</ul>
+							<ul class="copyright">
+								<li>&copy; Vamsi Hemadri</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="../../assets/js/jquery.min.js"></script>
+			<script src="../../assets/js/jquery.scrolly.min.js"></script>
+			<script src="../../assets/js/jquery.scrollex.min.js"></script>
+			<script src="../../assets/js/browser.min.js"></script>
+			<script src="../../assets/js/breakpoints.min.js"></script>
+			<script src="../../assets/js/util.js"></script>
+			<script src="../../assets/js/main.js"></script>
+
+	</body>
+</html>
+
