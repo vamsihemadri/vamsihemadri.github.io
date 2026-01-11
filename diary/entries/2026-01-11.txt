@@ -1,0 +1,41 @@
+January 11, 2026
+
+STATE OF CURSOR TODAY AND THE UNITED STATES OF AMERICA
+
+I was vibe coding along with Cursor today.Agent mode.
+It was generating a markdown file for each prompt.
+In one prompt, I asked it to "give pros and cons of each, lets discuss".
+Even then, it went ahead and created a markdown file.
+And the same think was in the response of each prompt.
+Thats the same content twice, in the output.
+Feel like these apps are hardcoded to generate as much text as possible. 
+Not to mention, each query takes in the whole history again. Each query takes in the whole cumulative contxt .
+So lets assume , in theory, there is a chat between two people Q and A.
+Lets assume the conversation is liek : Q1,A1,Q2,A2,Q3,A3,Q4,A4.
+
+But with LLMs, the conversation is like Q1,A1,(Q2+Q1),A2,(Q1+Q2+Q3),A3,(Q1+Q2+Q3+Q4),A4.
+
+Bet these companies are justifying their capex spends based on metrics like aggreagte input token count and output otken count.
+I know there is a reponses api which can take in previous_response_id but this is not the default in cursor.ITs still on chat completions API.
+--------------------------
+
+
+THis reminds me of one more thing.
+US carried out an operation where it abducted a leader of a foreign country.I am talking about Venezuelan leader Nicolas Maduro.
+The legal justification hasn't come out yet.
+Not imagine, if the same thing had been done by India. There would be condemnation, criticism and public pressure to accept that it was a mistake.
+But not with the US. THey can do anything. Their official statement partly read "Strength is the only way to continue peace". Ok, will keep that in mind.
+
+
+--------------------------
+
+I have decided to speak out when I solve problems and write more while trying to solve.
+I used to have a friend Pranjal, he used to scribble a lot. Reminded me of him today.
+I feel speaking and writing activate a different part of our brain.
+
+
+--------------------------
+
+Spoke to my past manager Nischaiy for quite some time friday evening. 
+He asked me to practice giving interviews more.
+His way of high level view of problems, even when one doesnt have the complete details is what I want to pick up.
